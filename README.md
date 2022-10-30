@@ -17,6 +17,8 @@ flask 사용 back 구현
 front
 - 채팅골격 구현
 - socket emit 성공
+- class components에서 fucntion components로 변경 
+    -대략적 인게임 UI? 디자인 수정 예정 https://codepen.io/SinJi7/pen/vYrNgrp
 
 back
 - 대략적 게임 코어 제작
