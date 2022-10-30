@@ -1,6 +1,5 @@
 import threading
 
-
 class Container(threading.Thread):
     """클래스 생성시 threading.Thread를 상속받아 만들면 된다"""
     __RoomValid = True
@@ -32,8 +31,6 @@ class Container(threading.Thread):
             #채팅 부분 여기에 구현해야함
 
 
-
-    
 def make_container_start(RoomNumber, User):
     container = Container()
     container.start()
