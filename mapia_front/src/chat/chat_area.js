@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
+//import io from 'socket.io-client';
 import Chat_input from './chat_input';
 import Chat_view from './chat_view';
 
+import { socket } from '../socket_connet';
 
-const socket = io.connect("http://localhost:4000/")
+//const socket = io.connect("http://localhost:4000/")
 
 function Chat_area(props)
 {
