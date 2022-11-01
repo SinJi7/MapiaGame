@@ -24,7 +24,7 @@ function Chat_area(props)
     }
 
     return (
-        <div class="chat_area">
+        <div className="chat_area">
             <Chat_view chat_log={chatlog}/>
             <Chat_input addChat={addChat}/>
         </div>

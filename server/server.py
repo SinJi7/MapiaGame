@@ -11,35 +11,54 @@ from container import Container, make_container_start
 ROOM_CONTAINER:dict = {}
 
 app = Flask(__name__)
+CORS(app)
 #app.config['SECRET_KEY'] = '비밀번호 설정'
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+if __name__ == "__main__":
+    print("secret")
+    app.secret_key = 'super secret key'
+    app.config['SESSION_TYPE'] = 'filesystem'
 
 # @app.route('/')
 # def sessions():
 #     return render_template('session.html')
 
 @app.route('/token', methods=["GET", "POST"])
+# parm room_number name
 def getToken():
-    if "username" in session: 
+    #False 조건
+    print(session)
+    if ("name" not in request.args) and ("room_number" not in request.args):
         return jsonify(
             token=False
         )
-
+    if "username" in session:
+        print("not give token")
+        return jsonify(
+            token=False
+        )
+    #setting data
     room_number=request.args.get('room_number')
+    rand_token = secrets.token_hex(nbytes=16)
+    name = request.args.get("name")
+
+    session['username'] = rand_token #make Session
+    print(session)
+
     #room 생성
     if room_number in ROOM_CONTAINER:
-        ###
-        rand_token = secrets.token_hex(nbytes=16)
-        name = request.args.get("name")
-        ###
-        session['username'] = rand_token
+
         ROOM_CONTAINER[room_number].addUser("rand_token", name)
-        ###
+        print(rand_token + " 방 입장")
         return jsonify(
             token=rand_token
         )
     else:
         ROOM_CONTAINER[room_number] = make_container_start()
+        ROOM_CONTAINER[room_number].addUser("rand_token", name)
+
+        print(rand_token + " 방 생성")
         return jsonify(
             token=rand_token
         )
