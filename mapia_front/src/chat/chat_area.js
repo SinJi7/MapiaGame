@@ -11,15 +11,17 @@ function Chat_area(props)
 {
     const [chatlog, setChatlog] = useState([])
     useEffect(()=>{
-        socket.on('message',({name,chat})=>{
-          setChatlog([...chat,{name,chat}])
+        socket.on('message',(e)=>{ //{name,chat}
+            console.log(e)
+            //setChatlog([...chat,{name,chat}])
         })  
     },[])
 
-    const addChat = (name, chat) => 
+    const addChat = (chat) => 
     {
         console.log("emit")
-        socket.emit('message',{name, chat})
+        socket.emit('message',"dskfla")
+        //socket.emit('message',{room_name: props.room, token : props.token, message: chat, time: 1})
         //setChatlog([...chat,{name,chat}])
     }
 

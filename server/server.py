@@ -12,7 +12,8 @@ ROOM_CONTAINER:dict = {}
 
 app = Flask(__name__)
 CORS(app)
-#app.config['SECRET_KEY'] = '비밀번호 설정'
+app.config['SECRET_KEY'] = b"abcdefg"
+
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 if __name__ == "__main__":
@@ -25,51 +26,59 @@ if __name__ == "__main__":
 #     return render_template('session.html')
 
 @app.route('/token', methods=["GET", "POST"])
-# parm room_number name
+# parm: room_name user_name
 def getToken():
-    #False 조건
-    print(session)
-    if ("name" not in request.args) and ("room_number" not in request.args):
+    if "token" in session:
+        print("중복입장")
         return jsonify(
             token=False
         )
-    if "username" in session:
-        print("not give token")
-        return jsonify(
-            token=False
-        )
+    #front에서 중복 입장을 막는다
     #setting data
-    room_name=request.args.get('room_name') 
+    room_name=request.args.get('room_name')
+    user_name = request.args.get("user_name")
     rand_token = secrets.token_hex(nbytes=16)
-    name = request.args.get("name")
 
-    #session['username'] = rand_token #make Session
-    print(session)
+    session["token"] = rand_token
 
+    print(room_name)
     #room 생성
-    if room_name in ROOM_CONTAINER:
-
-        #ROOM_CONTAINER[room_number].addUser("rand_token", name)
+    if room_name in ROOM_CONTAINER:   
+        #join room 
+        ROOM_CONTAINER[room_name].addUser(rand_token, user_name)
         print(rand_token + " 방 입장")
+
         return jsonify(
             token=rand_token
         )
     else:
-        R#OOM_CONTAINER[room_number] = make_container_start()
-        #ROOM_CONTAINER[room_number].addUser("rand_token", name)
-
+        #make room
+        ROOM_CONTAINER[room_name] = make_container_start()
+        ROOM_CONTAINER[room_name].addUser(rand_token, user_name)
         print(rand_token + " 방 생성")
+
         return jsonify(
             token=rand_token
         )
+
+@socketio.on('addroom')
+def join_room(data, methods=['GET', 'POST']):
+    print("호출")
+
+    room_name = str(data["room_name"])
+    token = data["token"]
+    session["token"] = token
+    print(session)
+    join_room(room_name)
 
 def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')
 
 @socketio.on('message')
+#param: room_name, token, meesage, time
 def handle_my_custom_event(json, methods=['GET', 'POST']):
 
-    room_name = request.args.get("room_number"),
+    room_name = request.args.get("room_name"),
     data = {
         "room_name" : room_name,
         "token" : request.args.get("token"),
@@ -77,6 +86,8 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
         "time" : request.args.get("time")
     }
 
+    print(room_name)
+    print([i for i in ROOM_CONTAINER])
     ROOM_CONTAINER[room_name].sendMessage(send, data)
 
     print('received my event: ' + str(json))

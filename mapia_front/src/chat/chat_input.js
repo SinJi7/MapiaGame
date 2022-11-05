@@ -5,7 +5,7 @@ function Chat_input(props)
     const [chat, setChat] = useState("");
     const handleSubmit = (event) => {
         event.preventDefault();
-        props.addChat(chat, props.id);
+        props.addChat(chat);
     };
 
     const handleChange = ({ target: { value } }) => setChat(value);

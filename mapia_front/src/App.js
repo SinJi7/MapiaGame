@@ -5,7 +5,7 @@ import Login_area from './login/login_area';
 function App() {
   //앱 최상단에서 관리
   const [token, setToken] = useState(false)
-  const [room, setRoom] = useState(-1)
+  const [room, setRoom] = useState("py")
   const [name, setName] = useState("Anonymous")
 
   return (
@@ -18,7 +18,8 @@ function App() {
         name={name}
         setName={setName}
       />
-      <Chat_area />
+      <Chat_area token={token} room={room}/>
+      
     </>
   );
 }

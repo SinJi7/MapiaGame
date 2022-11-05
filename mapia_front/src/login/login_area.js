@@ -11,11 +11,15 @@ function Login_area(props) {
         //get요청 구현하기
         event.preventDefault()
         const response = await axios.get('http://localhost:4000/token', {
-            params: { room: props.room, name: props.name },
+            params: { room_name: props.room, user_name: props.name },
         })
+        console.log("실행")
         
-       props.setToken(response.data.token)
+        await socket.emit("addroom", {room_name: props.room, token: response.data.token});
+
+        props.setToken(response.data.token)
     };
+
     const room_handleChange = ({ target: { value } }) => props.setRoom(value);
     const name_handleChange = ({ target: { value } }) => props.setName(value);
     return (

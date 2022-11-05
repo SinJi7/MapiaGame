@@ -16,6 +16,9 @@ class Game:
     return [self.jobls.pop(randint(0, i-1)) for i in range(len(self.jobls), 0, -1)] #
 
   #getter
+  def getTime(self):
+    return self.game_time["time"]
+    
   def getPlayer(self, id):
     for player in self.game_players:
       if id == player: return player.__getId()
