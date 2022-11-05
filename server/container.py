@@ -1,5 +1,7 @@
 import threading
 
+#from mapia-core.Core import Game
+
 class Container(threading.Thread):
     """클래스 생성시 threading.Thread를 상속받아 만들면 된다"""
     __RoomValid = True
@@ -15,8 +17,17 @@ class Container(threading.Thread):
     #     return True if ID == self.__RoomID else False
 
     def sendMessage(self, func, data):
-        for token in self.__Users:
-            func("response", {'data': data, 'username': token}, broadcast=True)
+        """
+        if 게임중:
+            if 낮:
+            elif 밤:
+                if 시민
+                if 마피아
+        elif 게임중이 아님
+        """
+
+        for data["token"] in self.__Users:
+            func({'data': data, 'username': token}, data["room_name"])
     #False일 경우 객체 제거
 
     def isRoomValid(self):

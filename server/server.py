@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, rooms, join_room, leave_room, send
 from flask import jsonify
 import secrets
 
@@ -39,24 +39,24 @@ def getToken():
             token=False
         )
     #setting data
-    room_number=request.args.get('room_number')
+    room_name=request.args.get('room_name') 
     rand_token = secrets.token_hex(nbytes=16)
     name = request.args.get("name")
 
-    session['username'] = rand_token #make Session
+    #session['username'] = rand_token #make Session
     print(session)
 
     #room 생성
-    if room_number in ROOM_CONTAINER:
+    if room_name in ROOM_CONTAINER:
 
-        ROOM_CONTAINER[room_number].addUser("rand_token", name)
+        #ROOM_CONTAINER[room_number].addUser("rand_token", name)
         print(rand_token + " 방 입장")
         return jsonify(
             token=rand_token
         )
     else:
-        ROOM_CONTAINER[room_number] = make_container_start()
-        ROOM_CONTAINER[room_number].addUser("rand_token", name)
+        R#OOM_CONTAINER[room_number] = make_container_start()
+        #ROOM_CONTAINER[room_number].addUser("rand_token", name)
 
         print(rand_token + " 방 생성")
         return jsonify(
@@ -69,9 +69,15 @@ def messageReceived(methods=['GET', 'POST']):
 @socketio.on('message')
 def handle_my_custom_event(json, methods=['GET', 'POST']):
 
-    room_number = request.args.get("room_number")
-    data = request.args.get("data")
-    ROOM_CONTAINER[room_number].sendMessage(socketio.emit, data)
+    room_name = request.args.get("room_number"),
+    data = {
+        "room_name" : room_name,
+        "token" : request.args.get("token"),
+        "message" : request.args.get("message"),
+        "time" : request.args.get("time")
+    }
+
+    ROOM_CONTAINER[room_name].sendMessage(send, data)
 
     print('received my event: ' + str(json))
 

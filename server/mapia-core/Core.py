@@ -24,7 +24,10 @@ class Game:
     for player in self.game_players:
       if id == player: return player.__getId()
     return None
-  
+  def isPlayerMapia(self, token):
+    #no implemented
+    return False
+
   #game control
   def get_player_ablity_parm(self, id):
     pass
