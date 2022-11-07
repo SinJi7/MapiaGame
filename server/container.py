@@ -5,6 +5,7 @@ from mapia_core.Core import Game
 class Container(threading.Thread):
     """클래스 생성시 threading.Thread를 상속받아 만들면 된다"""
     __RoomValid = True #방 유효
+    __NAME:str
     
     def __init__(self):
         """__init__ 메소드 안에서 threading.Thread를 init한다"""
@@ -14,6 +15,8 @@ class Container(threading.Thread):
     
     # def isRoomId(self, ID):
     #     return True if ID == self.__RoomID else False
+    def setName(self, name):
+        self.__Name = name
 
     def startGame(self, data):
         self.__Game = Game(self.__Users)
@@ -69,8 +72,9 @@ class Container(threading.Thread):
             if self.__isGamePlay(): self.__doGame()
 
 
-def make_container_start():
+def make_container_start(name):
     container = Container()
+    Container.setName(name)
     container.start()
     return container
     

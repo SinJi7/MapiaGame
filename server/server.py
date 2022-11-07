@@ -1,97 +1,67 @@
-from flask import Flask, render_template, request, session
-from flask_socketio import SocketIO, rooms, join_room, leave_room, send
-from flask import jsonify
-import secrets
-
-from flask_cors import CORS, cross_origin
+from flask import Flask, send_from_directory
+from flask_socketio import SocketIO, emit, join_room
+from flask_cors import CORS
 
 from container import Container, make_container_start
 
 #{RoomNumber: Container}
 ROOM_CONTAINER:dict = {}
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../mapia_front/build/static')
+app.config['SECRET_KEY'] = 'development key'
+socket = SocketIO(app)
 CORS(app)
-app.config['SECRET_KEY'] = b"abcdefg"
 
-socketio = SocketIO(app, cors_allowed_origins="*")
+#socketio = SocketIO(app, cors_allowed_origins="*")
 
-if __name__ == "__main__":
-    print("secret")
-    app.secret_key = 'super secret key'
-    app.config['SESSION_TYPE'] = 'filesystem'
+@app.route('/')
+def serve_static_index():
+    return send_from_directory('../mapia_front/build', 'index.html')
 
-# @app.route('/')
-# def sessions():
-#     return render_template('session.html')
+#############################################
+#test codes
+#############################################
+@socket.on('connect')
+def on_connect():
+    print('=============user_connected=============')
+    socket.emit("test", "conected")
 
-@app.route('/token', methods=["GET", "POST"])
-# parm: room_name user_name
-def getToken():
-    if "token" in session:
-        print("중복입장")
-        return jsonify(
-            token=False
-        )
-    #front에서 중복 입장을 막는다
-    #setting data
-    room_name=request.args.get('room_name')
-    user_name = request.args.get("user_name")
-    rand_token = secrets.token_hex(nbytes=16)
-
-    session["token"] = rand_token
-
-    print(room_name)
-    #room 생성
-    if room_name in ROOM_CONTAINER:   
-        #join room 
-        ROOM_CONTAINER[room_name].addUser(rand_token, user_name)
-        print(rand_token + " 방 입장")
-
-        return jsonify(
-            token=rand_token
-        )
-    else:
-        #make room
-        ROOM_CONTAINER[room_name] = make_container_start()
-        ROOM_CONTAINER[room_name].addUser(rand_token, user_name)
-        print(rand_token + " 방 생성")
-
-        return jsonify(
-            token=rand_token
-        )
-
-@socketio.on('addroom')
-def join_room(data, methods=['GET', 'POST']):
-    print("호출")
-
-    room_name = str(data["room_name"])
-    token = data["token"]
-    session["token"] = token
-    print(session)
+##############################################
+#Staging Code
+##############################################
+#컨테이너 사용 추가하기
+@socket.on('join_room')
+def join_handler(data):
+    print("=============join_room=============")
+    room_name = data["room_name"]
     join_room(room_name)
+    #컨테이너 생성 or 입장
+    return 
+    if room_name in ROOM_CONTAINER:
+        ROOM_CONTAINER.append(make_container_start)
+    else:
+        pass
 
-def messageReceived(methods=['GET', 'POST']):
-    print('message was received!!!')
 
-@socketio.on('message')
+@socket.on('message')
 #param: room_name, token, meesage, time
-def handle_my_custom_event(json, methods=['GET', 'POST']):
-
-    room_name = request.args.get("room_name"),
-    data = {
-        "room_name" : room_name,
-        "token" : request.args.get("token"),
-        "message" : request.args.get("message"),
-        "time" : request.args.get("time")
+def message_handler(msg, methods=['GET', 'POST']):
+    print("=============Message_On=============")
+    print(msg)
+    #test code
+    body = {
+        "room_name" : msg["room_name"],
+        "user_name" : msg["user_name"],
+        "message" : msg["message"]
     }
+    emit("message",  body, room=msg["room_name"])
+    return
 
     print(room_name)
     print([i for i in ROOM_CONTAINER])
     ROOM_CONTAINER[room_name].sendMessage(send, data)
 
     print('received my event: ' + str(json))
-
     
     #socketio.emit()
     # emit("response", {'data': message['data'], 'username': session['username']}, broadcast=True)
@@ -99,5 +69,12 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
     #이벤트 처리 추가
     #socketio.emit('my response', json, callback=messageReceived)
 
+##############################################
+
+def messageReceived(methods=['GET', 'POST']):
+    print('message was received!!!')
+
+
+
 if __name__ == '__main__':
-    socketio.run(app, port=4000, debug=True)
+    socket.run(app, port=4000, debug=True)

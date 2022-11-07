@@ -65,7 +65,7 @@ class Player:
     self.player_job = Job(job_name)
 
   def getJob(self):
-    return pl
+    return self.player_job
   def getId(self):
     pass
   def getlive(self):
