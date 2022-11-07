@@ -1,27 +1,91 @@
 import { useState } from 'react';
 import Chat_area from './chat/chat_area';
 import Login_area from './login/login_area';
+import React, { Component } from 'react'
+import io from 'socket.io-client'
 
-function App() {
-  //앱 최상단에서 관리
-  const [token, setToken] = useState(false)
-  const [room, setRoom] = useState("py")
-  const [name, setName] = useState("Anonymous")
+const socket = io.connect('http://localhost:4000');
 
-  return (
-    <>
+class App extends Component{
+  constructor (props) {
+    super(props);
+    this.state = {
+      token : false,
+      room : "",
+      name : "",
+      messages : [{user_name: "admin", message: "connect..."},
+    ],
+      users : [],
+      time: "aftermoon"
+    }
+    this.join_room = this.join_room.bind(this)
+    this.send_message = this.send_message.bind(this)
+  }
+  componentDidMount () {
+    this.setSocketListeners()
+  }
+
+  setSocketListeners()
+  {
+    socket.on("message", (data) => {
+      console.log(data)
+      const body = {user_name : data["user_name"], message : data["message"]}
+      this.setState({messages : [... this.state.messages, body]})
+    })
+
+    socket.on("update_user_list", (data) => {
+      this.setState({users : data.users})
+    })
+
+    socket.on("test", (data) => {
+      console.log(data)
+    })
+
+    //미구현
+    socket.on("night", () =>{
+    })
+
+    socket.on("aftermoon", () => {
+
+    })
+
+  }
+  // User act
+  join_room(room_name, user_name){
+    this.setState({room : room_name, name: user_name}, () => {
+      socket.emit("join_room", {room_name, user_name});
+    });
+  }
+
+  send_message(message, room_name, user_name)
+  {
+    //console.log(user_name)
+    socket.emit("message", {
+      room_name: room_name,
+      user_name : user_name,
+      message : message,
+      time: Date.now()
+    })
+  }
+
+  render()
+  {
+    return(<div>
+      Mapia Game
       <Login_area
-        setRoom={setRoom}
-        room={room}
-        token={token}
-        setToken={setToken}
-        name={name}
-        setName={setName}
+        join_room={this.join_room} 
       />
-      <Chat_area token={token} room={room}/>
+      <Chat_area
+        send_message={this.send_message}
+        messages={this.state.messages}
+        room_name={this.state.room}
+        user_name={this.state.name}
+      />
       
-    </>
-  );
+
+    </div>)
+  }
 }
+
 
 export default App;
