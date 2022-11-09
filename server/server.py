@@ -1,8 +1,10 @@
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request
 from flask_socketio import SocketIO, emit, join_room
 from flask_cors import CORS
 
 from container import Container, make_container_start
+import asyncio
+
 
 #{RoomNumber: Container}
 ROOM_CONTAINER:dict = {}
@@ -35,31 +37,34 @@ def join_handler(data):
     print("=============join_room=============")
     room_name = data["room_name"]
     join_room(room_name)
+
     #컨테이너 생성 or 입장
-    return 
-    if room_name in ROOM_CONTAINER:
-        ROOM_CONTAINER.append(make_container_start)
+    if room_name not in ROOM_CONTAINER:
+        ROOM_CONTAINER[room_name] = make_container_start(room_name, emit)
+        ROOM_CONTAINER[room_name].addUser(data["user_name"])
     else:
-        pass
+        ROOM_CONTAINER[room_name].addUser(data["user_name"])
 
 
 @socket.on('message')
 #param: room_name, token, meesage, time
 def message_handler(msg, methods=['GET', 'POST']):
     print("=============Message_On=============")
-    print(msg)
+    #print(msg)
     #test code
     body = {
         "room_name" : msg["room_name"],
         "user_name" : msg["user_name"],
         "message" : msg["message"]
     }
-    emit("message",  body, room=msg["room_name"])
+
+    ROOM_CONTAINER[msg["room_name"]].sendMessage(body)
+    #emit("message",  body, room=msg["room_name"])
     return
 
     print(room_name)
     print([i for i in ROOM_CONTAINER])
-    ROOM_CONTAINER[room_name].sendMessage(send, data)
+    
 
     print('received my event: ' + str(json))
     

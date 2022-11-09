@@ -1,9 +1,10 @@
-import { useState } from 'react';
 import Chat_area from './chat/chat_area';
 import Login_area from './login/login_area';
+import Users_area from './controller/Users';
+
+
 import React, { Component } from 'react'
 import io from 'socket.io-client'
-
 const socket = io.connect('http://localhost:4000');
 
 class App extends Component{
@@ -15,11 +16,14 @@ class App extends Component{
       name : "",
       messages : [{user_name: "admin", message: "connect..."},
     ],
-      users : [],
-      time: "aftermoon"
+      users : [
+    ],
+      time: "aftermoon",
+      target : "",
     }
     this.join_room = this.join_room.bind(this)
     this.send_message = this.send_message.bind(this)
+    this.setTarget = this.setTarget.bind(this)
   }
   componentDidMount () {
     this.setSocketListeners()
@@ -41,6 +45,11 @@ class App extends Component{
       console.log(data)
     })
 
+    socket.on("user_update", (data) => {
+      
+      this.setState({users : data.users})
+    })
+
     //미구현
     socket.on("night", () =>{
     })
@@ -48,6 +57,7 @@ class App extends Component{
     socket.on("aftermoon", () => {
 
     })
+
 
   }
   // User act
@@ -67,6 +77,11 @@ class App extends Component{
       time: Date.now()
     })
   }
+  //game
+  setTarget(name)
+  {
+    this.setState({target : name});
+  }
 
   render()
   {
@@ -81,7 +96,10 @@ class App extends Component{
         room_name={this.state.room}
         user_name={this.state.name}
       />
-      
+      <Users_area
+        users={this.state.users}
+        setTarget={this.state.target}
+      /> 
 
     </div>)
   }

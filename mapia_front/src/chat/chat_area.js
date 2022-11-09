@@ -32,7 +32,8 @@ class Chat_area extends Component
         return (<>
         {
         view_message.map(e => <li class="message_block">{e.user_name} : {e.message}</li>)
-        }</>)
+        }
+        </>)
     }
 
     render()
