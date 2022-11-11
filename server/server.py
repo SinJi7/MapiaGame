@@ -5,16 +5,20 @@ from flask_cors import CORS
 from container import Container, make_container_start
 import asyncio
 
+import time
+import threading
 
-#{RoomNumber: Container}
-ROOM_CONTAINER:dict = {}
+# {RoomNumber: Container}
+ROOM_CONTAINER: dict = {}
 
 app = Flask(__name__, static_folder='../mapia_front/build/static')
 app.config['SECRET_KEY'] = 'development key'
 socket = SocketIO(app)
 CORS(app)
 
-#socketio = SocketIO(app, cors_allowed_origins="*")
+# socketio = SocketIO(app, cors_allowed_origins="*")
+
+
 
 @app.route('/')
 def serve_static_index():
@@ -32,6 +36,28 @@ def on_connect():
 #Staging Code
 ##############################################
 #컨테이너 사용 추가하기
+
+@socket.on('game_start')
+def on_start_game(data):
+    rq_room_name = data["room_name"]
+    rq_user_name = data["user_name"]
+    #reject contiditon
+    #add token contiditon, next time
+    if (
+        ROOM_CONTAINER[rq_room_name].isPalyGame() or
+        not ROOM_CONTAINER[rq_room_name].isOwner(rq_user_name) or
+        ROOM_CONTAINER[rq_room_name].isRoomMemberCount() #
+       ):
+        return
+    #Game Start
+    ROOM_CONTAINER[rq_room_name].startGameSetting() 
+
+    while True:
+        if not ROOM_CONTAINER[rq_room_name].isPalyGame(): break
+        time.sleep(1)
+        ROOM_CONTAINER[rq_room_name].doGame()  
+
+
 @socket.on('join_room')
 def join_handler(data):
     print("=============join_room=============")
@@ -45,6 +71,11 @@ def join_handler(data):
     else:
         ROOM_CONTAINER[room_name].addUser(data["user_name"])
 
+    message_handler({
+        "room_name" : "room1",
+        "user_name" : "room2",
+        "message" : "room3"
+    })
 
 @socket.on('message')
 #param: room_name, token, meesage, time
@@ -60,6 +91,7 @@ def message_handler(msg, methods=['GET', 'POST']):
 
     ROOM_CONTAINER[msg["room_name"]].sendMessage(body)
     #emit("message",  body, room=msg["room_name"])
+
     return
 
     print(room_name)
@@ -82,4 +114,7 @@ def messageReceived(methods=['GET', 'POST']):
 
 
 if __name__ == '__main__':
+
     socket.run(app, port=4000, debug=True)
+    
+

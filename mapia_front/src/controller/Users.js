@@ -9,6 +9,7 @@ class Users_area extends Component {
 
     radio_handle_change(event) {
         console.log(event.target.value)
+        this.props.setTarget(event.target.value)
     }
     userRadio() {
         return (<>

@@ -19,6 +19,7 @@ class App extends Component{
       users : [
     ],
       time: "aftermoon",
+      target_type  : "투표",
       target : "",
     }
     this.join_room = this.join_room.bind(this)
@@ -46,20 +47,29 @@ class App extends Component{
     })
 
     socket.on("user_update", (data) => {
-      
       this.setState({users : data.users})
     })
 
+    //target 수집 요청시 응답
+    socket.on("get_Target"), (data) => {
+      socket.emit("send_Target", {
+        type: data["type"],
+        user_name: this.state.user_name,
+        target_name : this.state.target
+      });
+    }
+
     //미구현
     socket.on("night", () =>{
+
     })
 
     socket.on("aftermoon", () => {
 
     })
-
-
   }
+
+
   // User act
   join_room(room_name, user_name){
     this.setState({room : room_name, name: user_name}, () => {

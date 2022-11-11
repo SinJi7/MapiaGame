@@ -10,30 +10,53 @@ class Container(threading.Thread):
     """클래스 생성시 threading.Thread를 상속받아 만들면 된다"""
     __RoomValid = True #방 유효
     
-    
     def __init__(self, name, func):
-        self.__NAME:str = name
-        """__init__ 메소드 안에서 threading.Thread를 init한다"""
+        #"""__init__ 메소드 안에서 threading.Thread를 init한다"""
         threading.Thread.__init__(self)
-        self.__Game = None
+        
+        #User Data
+        self.__OWNER:str = ""
+        self.__NAME:str = name
         self.__Users = {} # key is name
+        
+        self.__Game = None #Use Gaem class
 
-        self.__emit = func
+        self.__emit = func 
+
+        #임시데이터들 초기화 함수 필요
+        self.__target_collect = []
     
     # def isRoomId(self, ID):
     #     return True if ID == self.__RoomID else False
 
-    def startGame(self, data):
+    #tmp data 관리
+    #게임 영역에서 작동한다
+    def isTarget_CollectComplete(self) -> bool:
+        return len(self.__target_collect) == len(self.__Users)
+
+    def Target_clear(self) -> None:
+        self.__target_collect.clear()
+    
+    ###########
+    def startGameSetting(self) -> bool:
         self.__Game = Game(self.__Users)
 
-    def endGame(self):
+    def isPalyGame(self) -> bool:
+        return self.__Game != None 
+
+    def isOwner(self, name:str) -> bool:
+        return self.__OWNER == name #임시 코드
+
+    def isRoomMemberCount(self) -> bool:
+        member_cnt = len([i for i in self.__Users])
+        return True if (member_cnt == 6 or member_cnt ==  8 or member_cnt == 10) else False
+
+    def endGame(self) -> dict:
         game_res = self.__Game.end_game()
         self.__Game = None
         return game_res
-    def __isGamePlay(self): #Game 진행중 여부 
-        return False if self.__Game == None else True
 
-    def sendMessage(self, data):
+    def sendMessage(self, data) -> None:
         if self.__isGamePlay():
             if "aftermoon" == self.__Game.gameTime():
                 pass #낮
@@ -45,10 +68,11 @@ class Container(threading.Thread):
             
     #False일 경우 객체 제거
 
-    def isRoomValid(self):
+    def isRoomValid(self) -> bool:
         return self.__RoomValid
 
-    def __doGame(self):
+    def doGame(self):
+        #낮, 밤 변경
         pass #게임 진행 함수 여기에
         #reset 조건 필요
 
@@ -82,17 +106,19 @@ class Container(threading.Thread):
     def isInUser(self, user_token):
         return True if user_token in self.__Users else False
 
-    #start 실행
+    #Not Use
     def run(self):
         while self.__RoomValid:     
             #self.__emit("test", "SKdlfksfjsflsdfla", room=self.__NAME)
-            if self.__isGamePlay(): self.__doGame()
+            if self.__isGamePlay(): self.doGame()
             time.sleep(1)
+
+        
 
 
 def make_container_start(name, emit):
     container = Container(name, func=emit)
-    container.start()
+    #container.start()
     return container
     
 

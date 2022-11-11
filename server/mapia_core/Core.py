@@ -3,12 +3,17 @@ from random import randint
 
 import time
 
+
+#역할은?
 class Game:
   game_players: list
   game_time: dict = { "time" : "aftermoon", "next" : datetime.now() + timedelta(seconds=90)}
   #initializer area
-  def __init__(self, playerIds:list):
+
+  #parm 유저 식별자(이름)
+  def __init__(self, playerIds:list): 
     randjobs :list = self.__makeRandomJob(len(playerIds))
+
     self.jobls = [Player(playerIds[i], randjobs[i]) for i in range(len(playerIds))]
 
   def __makeRandomJob(self, playerCount:int):
@@ -57,19 +62,21 @@ class Game:
       self.game_time["next"] = datetime.now() + timedelta(seconds=30)
 
 
+#직업, 생존여부를 저장한다.
 class Player:
-  id
-  live: bool = True
+  __name: str
+  __live: bool = True
 
-  def __init__(self, id, job_name):
-    self.player_job = Job(job_name)
+  def __init__(self, name, job_name):
+    self.__name = name
+    self.__player_job = Job(job_name)
 
   def getJob(self):
-    return self.player_job
+    return self.__player_job
   def getId(self):
     pass
   def getlive(self):
-    return self.live
+    return self.__live
 
 from pygments.styles import get_all_styles
 
