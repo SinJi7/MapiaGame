@@ -38,7 +38,7 @@ def on_connect():
 #컨테이너 사용 추가하기
 
 @socket.on('game_start')
-def on_start_game(data):
+def on_start_game(data): #Game 시간 동안 계속 유지된다
     rq_room_name = data["room_name"]
     rq_user_name = data["user_name"]
     #reject contiditon
@@ -46,17 +46,43 @@ def on_start_game(data):
     if (
         ROOM_CONTAINER[rq_room_name].isPalyGame() or
         not ROOM_CONTAINER[rq_room_name].isOwner(rq_user_name) or
-        ROOM_CONTAINER[rq_room_name].isRoomMemberCount() #
+        ROOM_CONTAINER[rq_room_name].isRoomMemberCount()
        ):
-        return
+        pass #return test 용도롤 조건 무시
     #Game Start
-    ROOM_CONTAINER[rq_room_name].startGameSetting() 
-
+    ROOM_CONTAINER[rq_room_name].startGameSetting()
+    ###########################################################
+    #Game
     while True:
         if not ROOM_CONTAINER[rq_room_name].isPalyGame(): break
-        time.sleep(1)
-        ROOM_CONTAINER[rq_room_name].doGame()  
 
+        ### 시간 변경 ###
+        time_type = ROOM_CONTAINER[rq_room_name].change_time()
+        if time_type:
+            emit("time_update", {"tiem" : time_type, }, room=rq_room_name)
+
+            target_dict_ls:list = ROOM_CONTAINER[rq_room_name].Target_Colleting(time_type) # dict
+            #밤 -> 투표 (사형 대상)
+            #투표 -> 밤 (사형 여부)
+            #밤 -> 낮 (특수능력 사용 대상)
+            messages = ROOM_CONTAINER[rq_room_name].apply_target_to_game()
+            ROOM_CONTAINER[rq_room_name].send_system_message("\n".join(messages))
+        ################
+
+        time.sleep(1)
+        ROOM_CONTAINER[rq_room_name].doGame()
+    ###########################################################
+
+# type: data["type"],
+# user_name: this.state.user_name,
+# room_name: this.state.room_name,
+# target_name : this.state.target
+@socket.on('send_target')
+def on_Target(data): #유저 필터링 미적용 타겟만 수집
+    room_name = data["room_name"]
+    target_name = data["target_name"]
+    user_name = data["user_name"]
+    ROOM_CONTAINER[room_name].addTarget({user_name: target_name}) #user_name : target_name 형태로 수정 필요
 
 @socket.on('join_room')
 def join_handler(data):

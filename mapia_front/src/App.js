@@ -51,20 +51,17 @@ class App extends Component{
     })
 
     //target 수집 요청시 응답
-    socket.on("get_Target"), (data) => {
-      socket.emit("send_Target", {
+    socket.on("get_target"), (data) => {
+      socket.emit("send_target", {
         type: data["type"],
         user_name: this.state.user_name,
+        room_name: this.state.room_name,
         target_name : this.state.target
       });
     }
 
     //미구현
-    socket.on("night", () =>{
-
-    })
-
-    socket.on("aftermoon", () => {
+    socket.on("time_update", () =>{
 
     })
   }

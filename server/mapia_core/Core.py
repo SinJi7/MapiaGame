@@ -7,7 +7,7 @@ import time
 #역할은?
 class Game:
   game_players: list
-  game_time: dict = { "time" : "aftermoon", "next" : datetime.now() + timedelta(seconds=90)}
+  __game_time: dict = { "time" : "aftermoon", "next" : datetime.now() + timedelta(seconds=90)}
   #initializer area
 
   #parm 유저 식별자(이름)
@@ -22,7 +22,7 @@ class Game:
 
   #getter
   def getTime(self):
-    return self.game_time["time"]
+    return self.__game_time["time"]
     
   def getPlayer(self, id):
     for player in self.game_players:
@@ -43,23 +43,52 @@ class Game:
     pass
   def kill_player(self):
     pass
+
   def isVoteTime(self):
-    if self.game_time["time"] == "aftermoon" and self.game_time["next"] <= datetime.now():
+    if self.__game_time["time"] == "aftermoon" and self.__game_time["next"] <= datetime.now():
       return True
+
   def death_check(self, id, yes, no):
     return True
+
   def end_game(self):
     if len([player for player in self.game_players if player.getlive() and player.getJob()]) == 0:
       return True
 
+  #############################################
   #private game control
-  def __change_time(self):
-    if self.game_time["time"] == "night":
-      self.game_time["time"] = "aftermoon"
-      self.game_time["next"] = datetime.now() + timedelta(seconds=90)
-    elif self.game_time["time"] == "aftermoon":
-      self.game_time["time"] = "night"
-      self.game_time["next"] = datetime.now() + timedelta(seconds=30)
+  #############################################
+
+  #setter
+  def __set_game_time(self, time_type:str, next_second:int) -> None:
+    self.__game_time = {
+      "time":time_type, 
+      "next" : datetime.now() + timedelta(seconds=next_second)
+    }
+
+  ##############################################
+  #Staging Code
+  ##############################################
+
+  #function: time check, change time
+  def change_time(self):
+    time_type_seconds:dict = {"afternoon": 120,"night": 60,"vote": 20}
+    def get_next(now_time):
+      TIME_LS = ["afternoon","night","vote"]
+      now_idx = TIME_LS.index(now_time)
+      return TIME_LS[(now_idx + 1) % 3]
+    
+    #if now time is change time, call setter
+    if datetime.now() >= self.__game_time["next"]:
+
+      next_time:str = get_next(self.__game_time["time"])
+      next_change_second:int = time_type_seconds[next_time]
+
+      self.__set_game_time(time_type=next_time, next_second=next_change_second)
+      return next_time
+    else:
+      return False
+  ##############################################
 
 
 #직업, 생존여부를 저장한다.
