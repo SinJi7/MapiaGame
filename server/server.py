@@ -1,5 +1,5 @@
 from flask import Flask, send_from_directory, request
-from flask_socketio import SocketIO, emit, join_room
+from flask_socketio import SocketIO, emit, join_room, close_room
 from flask_cors import CORS
 
 from container import Container, make_container_start
@@ -19,7 +19,6 @@ CORS(app)
 # socketio = SocketIO(app, cors_allowed_origins="*")
 
 
-
 @app.route('/')
 def serve_static_index():
     return send_from_directory('../mapia_front/build', 'index.html')
@@ -30,17 +29,20 @@ def serve_static_index():
 @socket.on('connect')
 def on_connect():
     print('=============user_connected=============')
-    socket.emit("test", "conected")
+    #socket.emit("test", "conected")
 
 ##############################################
 #Staging Code
 ##############################################
 #컨테이너 사용 추가하기
 
+
 @socket.on('game_start')
 def on_start_game(data): #Game 시간 동안 계속 유지된다
+    print("================start_game====================")
     rq_room_name = data["room_name"]
     rq_user_name = data["user_name"]
+
     #reject contiditon
     #add token contiditon, next time
     if (
@@ -59,18 +61,21 @@ def on_start_game(data): #Game 시간 동안 계속 유지된다
         ### 시간 변경 ###
         time_type = ROOM_CONTAINER[rq_room_name].change_time()
         if time_type:
-            emit("time_update", {"tiem" : time_type, }, room=rq_room_name)
+            emit("time_update", {"time" : time_type, }, room=rq_room_name)
 
             target_dict_ls:list = ROOM_CONTAINER[rq_room_name].Target_Colleting(time_type) # dict
             #밤 -> 투표 (사형 대상)
             #투표 -> 밤 (사형 여부)
             #밤 -> 낮 (특수능력 사용 대상)
-            messages = ROOM_CONTAINER[rq_room_name].apply_target_to_game()
+            #구현 미완료
+            messages = ROOM_CONTAINER[rq_room_name].apply_target_to_game(time_type, target_dict_ls)
             ROOM_CONTAINER[rq_room_name].send_system_message("\n".join(messages))
         ################
 
         time.sleep(1)
         ROOM_CONTAINER[rq_room_name].doGame()
+    close_room(f"{rq_room_name}_mapia") #열었던 경우 닫는다.
+    close_room(f"{rq_room_name}_dead")
     ###########################################################
 
 # type: data["type"],
@@ -79,6 +84,7 @@ def on_start_game(data): #Game 시간 동안 계속 유지된다
 # target_name : this.state.target
 @socket.on('send_target')
 def on_Target(data): #유저 필터링 미적용 타겟만 수집
+    if "" == data["target_name"]:return
     room_name = data["room_name"]
     target_name = data["target_name"]
     user_name = data["user_name"]
@@ -97,12 +103,45 @@ def join_handler(data):
     else:
         ROOM_CONTAINER[room_name].addUser(data["user_name"])
 
-    message_handler({
-        "room_name" : "room1",
-        "user_name" : "room2",
-        "message" : "room3"
-    })
+    # message_handler({
+    #     "room_name" : "room1",
+    #     "user_name" : "room2",
+    #     "message" : "room3"
+    # })
 
+
+# param : user_name, room_name
+@socket.on("get_job")
+def on_get_job(data):
+    if ROOM_CONTAINER[data["room_name"]].isPalyGame():
+        job_name = ROOM_CONTAINER[data["room_name"]].getJob(data["user_name"])
+        emit("set_job", {"job_name" : job_name})
+
+# use time : game start
+# Action: if requester is mapia, join maipa romm
+# param : user_name, room_name
+@socket.on("join_mapia")
+def on_join_mapia_handler(data):
+    if ROOM_CONTAINER[data["room_name"]].isPalyGame():
+        if ROOM_CONTAINER[data["user_name"]].isMapiaUser():
+            join_room(f"{data['room_name']}_mapia")
+
+
+# use time : client get death msg, call this
+# Action: if requester is dead, join dead room
+# param : user_name, room_name
+@socket.on("join_dead")
+def on_join_dead_handler(data):
+    if ROOM_CONTAINER[data["room_name"]].isPalyGame():
+        if ROOM_CONTAINER[data["user_name"]].isDeadUser():
+            join_room(f"{data['room_name']}_dead")
+            join_room(f"{data['room_name']}_mapia")
+
+
+# use time : all time
+# Action: send message.
+#   Action case: not paly(afternoon, nigth, vote) / play
+# param: room_name, user_name, message
 @socket.on('message')
 #param: room_name, token, meesage, time
 def message_handler(msg, methods=['GET', 'POST']):

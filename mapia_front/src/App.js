@@ -12,19 +12,23 @@ class App extends Component{
     super(props);
     this.state = {
       token : false,
-      room : "",
-      name : "",
+      room_name : "",
+      user_name : "",
       messages : [{user_name: "admin", message: "connect..."},
     ],
       users : [
     ],
-      time: "aftermoon",
+      time: "afternoon",
       target_type  : "투표",
       target : "",
+      job_name: ""
     }
     this.join_room = this.join_room.bind(this)
     this.send_message = this.send_message.bind(this)
     this.setTarget = this.setTarget.bind(this)
+    this.game_startting = this.game_startting.bind(this)
+    this.update_room_user = this.update_room_user.bind(this)
+
   }
   componentDidMount () {
     this.setSocketListeners()
@@ -50,22 +54,38 @@ class App extends Component{
       this.setState({users : data.users})
     })
 
+    socket.on("game_start", (data) => {
+      socket.emit("join_mapia", {
+        user_name: this.state.user_name,
+        room_name: this.state.room_name,
+      })
+      socket.emit("get_job", {
+        user_name: this.state.user_name,
+        room_name: this.state.room_name
+      })
+    })
+    
+    socket.on("set_job", (data) => {
+      this.setState({job_name: data["job_name"]})
+    })
+
+
     //target 수집 요청시 응답
-    socket.on("get_target"), (data) => {
+    socket.on("get_target", (data) => {
       socket.emit("send_target", {
         type: data["type"],
         user_name: this.state.user_name,
         room_name: this.state.room_name,
         target_name : this.state.target
-      });
-    }
-
-    //미구현
-    socket.on("time_update", () =>{
+      })
 
     })
-  }
 
+    //미구현
+    socket.on("time_update", (data) =>{
+      this.setState({time: data["time"]})
+    })
+  }
 
   // User act
   join_room(room_name, user_name){
@@ -84,6 +104,18 @@ class App extends Component{
       time: Date.now()
     })
   }
+  game_startting(user_name, room_name){
+    console.log("start")
+    socket.emit("game_start", {
+      user_name : user_name,
+      room_name : room_name
+    })
+  }
+
+  update_room_user(user_name, room_name)
+  {
+    this.setState({user_name: user_name, room_name: room_name})
+  }
   //game
   setTarget(name)
   {
@@ -95,13 +127,21 @@ class App extends Component{
     return(<div>
       Mapia Game
       <Login_area
-        join_room={this.join_room} 
+        join_room={this.join_room}
+        game_startting={this.game_startting}
+        user_name= {this.state.user_name}
+        room_name= {this.state.room_name}
+        update_room_user={this.update_room_user}
       />
+      <div className='game_state'>
+        시간: {this.state.time}
+        직업: {this.state.job_name}
+      </div>
       <Chat_area
         send_message={this.send_message}
         messages={this.state.messages}
-        room_name={this.state.room}
-        user_name={this.state.name}
+        room_name={this.state.room_name}
+        user_name={this.state.user_name}
       />
       <Users_area
         users={this.state.users}

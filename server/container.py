@@ -32,7 +32,6 @@ class Container(threading.Thread):
 
     #tmp data 관리
     #게임 영역에서 작동한다
-    
     def isTarget_CollectComplete(self) -> bool:
         return len(self.__target_collect) == len(self.__Users)
 
@@ -45,12 +44,13 @@ class Container(threading.Thread):
     def Target_Colleting(self, type) -> list: #sever.py에서 호출해야 함
         self.__emit("get_target", {"type": type}, room=self.__NAME)
         time.sleep(1)
-        body = {
-        "room_name" : self.__NAME,
-        "user_name" : "admin",
-        "message" : "투표 결과를 수집합니다"
-        }
-        self.__emit("message", {"type": type}, room=self.__NAME)
+
+        if type == "vote":
+            self.send_system_message("투표 결과를 수집합니다.")
+        elif type == "night":
+            self.send_system_message("밤이 되었습니다.")
+        elif type == "afternoon":
+            self.send_system_message("아침이 되었습니다.")
         #수정 필요 영역
         time.sleep(5) #send_target이 완료되기 위해서
         # isTarget_CollectComplete(self)
@@ -63,10 +63,11 @@ class Container(threading.Thread):
     def addTarget(self, name):
         self.__target_collect.append(name)    
     
-    def change_time():
-        return Game.change_time()
+    def change_time(self):
+        return self.__Game.change_time()
         
     def apply_target_to_game(self, type, targets) -> list:
+        #직업 처리는 여기서 만들기
         res_messages = []
         return res_messages
 
@@ -75,17 +76,30 @@ class Container(threading.Thread):
     def startGameSetting(self) -> bool:
         self.__Game = Game(self.__Users)
 
+        ##############################################
+        self.__emit("game_start", {}, room=self.__NAME)
+        #job setting, mapia join
+        ##############################################
+
     def endGame(self) -> dict:
         game_res = self.__Game.end_game()
         self.__Game = None
         return game_res
     #####################################
 
+    def getJob(self, user_name):
+        return self.__Game.getPlayerJob(user_name=user_name)
+
     def isPalyGame(self) -> bool:
         return self.__Game != None 
 
     def isOwner(self, name:str) -> bool:
         return self.__OWNER == name #임시 코드
+        
+    def isMapiaUser(self, user_name):
+        return self.__Game.isPlayerMapia(user_name=user_name)
+    def isUserDead(self, user_name):
+        return True
 
     def isRoomMemberCount(self) -> bool:
         member_cnt = len([i for i in self.__Users])
@@ -100,18 +114,25 @@ class Container(threading.Thread):
         }
         self.__emit("message", body, to=self.__NAME)
 
+    #parm: data{user_name, room_name, message}
     def sendMessage(self, data) -> None: #sever.py 에서 호출 해야함
+        # self.__emit("message", data, to=self.__NAME)
+        # return
+        user_name = data["user_name"]
+        
         if self.__isGamePlay():
-            if "aftermoon" == self.__Game.gameTime():
-                pass #낮
-            else:
-                if self.__Game.isPlayerMapia():
-                    pass #send message
+            if self.__Game.isDeadUser(user_name=user_name):
+                self.__emit("message", data, room=f"{self.__NAME}_dead")
+                #dead user일 경우 밑으로 가지 않아야 한다.
+            elif "afternoon" == self.__Game.gameTime():
+                self.__emit("message", data, to=self.__NAME)
+            elif "night" == self.__Game.gameTime() and self.__Game.isPlayerMapia():
+                self.__emit("message", data, room=f"{self.__NAME}_mapia")
         else:
-            self.__emit("message", data, to=self.__NAME)
-            
-    #False일 경우 객체 제거
+            self.__emit("message", data, to=self.__NAME) #게임 플레이 중이 아닐 경우
+        return
 
+    #False일 경우 객체 제거
     def isRoomValid(self) -> bool:
         return self.__RoomValid
 

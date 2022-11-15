@@ -6,35 +6,65 @@ import time
 
 #역할은?
 class Game:
-  game_players: list
-  __game_time: dict = { "time" : "aftermoon", "next" : datetime.now() + timedelta(seconds=90)}
+  __game_players: list = []
+  __game_time: dict 
   #initializer area
 
   #parm 유저 식별자(이름)
-  def __init__(self, playerIds:list): 
-    randjobs :list = self.__makeRandomJob(len(playerIds))
+  def __init__(self, playerDict:dict):
+    playerIds = [i for i in playerDict] 
+    rand_jobs :list = self.__makeRandomJob(len(playerIds))
+    self.__set_game_time("afternoon") #{ "time" : "aftermoon", "next" : datetime.now() + timedelta(seconds=90)}
 
-    self.jobls = [Player(playerIds[i], randjobs[i]) for i in range(len(playerIds))]
+    for idx in range(len(playerIds)):
+      self.__game_players.append({"name": playerIds[idx], "job_name": rand_jobs[idx], "live": True})
 
-  def __makeRandomJob(self, playerCount:int):
-    game_players = ["mapia" for _ in range(2)] + ["citizen" for _ in range(6 - 8 + playerCount)]
-    return [self.jobls.pop(randint(0, i-1)) for i in range(len(self.jobls), 0, -1)] #
+    #self.jobls = [Player(playerIds[i], rand_jobs[i]) for i in range(len(playerIds))]
+
+  #player count
+  #return: random job list [mapia... citizen]
+  #parm: playerCount(player count), mapia_count: default 2
+  def __makeRandomJob(self, playerCount:int, mapia_count:int = 2):
+    base_job_ls = ["mapia" for _ in range(mapia_count)] + ["citizen" for _ in range(6 - 8 + playerCount)]
+    rand_job_ls = [base_job_ls.pop(randint(0, i-1)) for i in range(len(base_job_ls), 0, -1)]
+    return rand_job_ls # [mapia... citizen]
+
+  #param: find_user_name
+  #return: user_dict
+  def __findUser(self, find_user_name) -> dict:
+    #if can't find user, return this
+    base = {"name": "null", "job_name": "citizen", "live": False}
+
+    for user_dict in self.__game_players:
+      if user_dict["user_name"] == find_user_name:
+        base = user_dict
+
+    return base
 
   #getter
   def getTime(self):
     return self.__game_time["time"]
     
   def getPlayer(self, id):
-    for player in self.game_players:
+    for player in self.__game_players:
       if id == player: return player.__getId()
     return None
+    
   def getDeathPlayer(self, id):
-    for player in self.game_players:
+    for player in self.__game_players:
       if id == player: return player.__getId()
     return None
-  def isPlayerMapia(self, token):
-    #no implemented
-    return False
+    
+  def isPlayerMapia(self, user_name):
+    user_obj:dict = self.__findUser(user_name)
+    return "mapia" == user_obj["job_name"]
+
+  def getPlayerJob(self, user_name):
+    user_obj = self.__findUser(user_name)
+    return user_obj["job_name"]
+
+  def isDeadUser(self, user_name):
+    return 
 
   #game control
   def get_player_ablity_parm(self, id):
@@ -48,11 +78,8 @@ class Game:
     if self.__game_time["time"] == "aftermoon" and self.__game_time["next"] <= datetime.now():
       return True
 
-  def death_check(self, id, yes, no):
-    return True
-
   def end_game(self):
-    if len([player for player in self.game_players if player.getlive() and player.getJob()]) == 0:
+    if len([player for player in self.__game_players if player.getlive() and player.getJob()]) == 0:
       return True
 
   #############################################
@@ -60,7 +87,11 @@ class Game:
   #############################################
 
   #setter
-  def __set_game_time(self, time_type:str, next_second:int) -> None:
+  def __set_game_time(self, time_type:str) -> None:
+    #time_type_seconds:dict = {"afternoon": 120,"night": 60,"vote": 20}
+    time_type_seconds:dict = {"afternoon": 10,"night": 10,"vote": 10}
+    next_second = time_type_seconds[time_type]
+
     self.__game_time = {
       "time":time_type, 
       "next" : datetime.now() + timedelta(seconds=next_second)
@@ -72,9 +103,8 @@ class Game:
 
   #function: time check, change time
   def change_time(self):
-    time_type_seconds:dict = {"afternoon": 120,"night": 60,"vote": 20}
     def get_next(now_time):
-      TIME_LS = ["afternoon","night","vote"]
+      TIME_LS = ["afternoon","vote","night"]
       now_idx = TIME_LS.index(now_time)
       return TIME_LS[(now_idx + 1) % 3]
     
@@ -82,15 +112,16 @@ class Game:
     if datetime.now() >= self.__game_time["next"]:
 
       next_time:str = get_next(self.__game_time["time"])
-      next_change_second:int = time_type_seconds[next_time]
 
-      self.__set_game_time(time_type=next_time, next_second=next_change_second)
+      self.__set_game_time(time_type=next_time)
       return next_time
-    else:
+    else: 
       return False
   ##############################################
 
 
+#미사용 코드
+#########################################################3
 #직업, 생존여부를 저장한다.
 class Player:
   __name: str
@@ -102,19 +133,21 @@ class Player:
 
   def getJob(self):
     return self.__player_job
-  def getId(self):
-    pass
+  def get_name(self):
+    return self.__name
   def getlive(self):
     return self.__live
 
-from pygments.styles import get_all_styles
-
 class Job:
   #initializer area
-  def __init__(self, name):
-    self.name = name
-    self.ability = self.__setability(name)
+  def __init__(self, job_name):
+    self.__name = job_name
+    self.__ability = self.__setability(job_name)
     pass
+
+  def get_name(self):
+    return self.__name
+
   def __setability(self, name):
     def mapia(game: Game, player_id, get_parm=False):
       if get_parm: return ["kill_player"]
