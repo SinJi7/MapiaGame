@@ -1,4 +1,4 @@
-Mapia Game
+Mapia Game (판넬 이미지 readme 동일 경로 panel.png)
 ================
 Lib, framework, language
 ----------------
