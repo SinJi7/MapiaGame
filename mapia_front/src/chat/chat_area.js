@@ -1,4 +1,6 @@
 import React, { Component, useEffect, useState } from 'react';
+
+import "../App_design.css"
 //import io from 'socket.io-client';
 // import Chat_input from './chat_input';
 // import Chat_view from './chat_view';
@@ -31,7 +33,7 @@ class Chat_area extends Component
         const view_message = this.props.messages.slice(-10)
         return (<>
         {
-        view_message.map(e => <li class="message_block">{e.user_name} : {e.message}</li>)
+        view_message.map(e => <li className='chat_block'> <div className='profile'><strong>{e.user_name}</strong></div> <div className="message">{e.message}</div></li>)
         }
         </>)
     }
@@ -39,13 +41,13 @@ class Chat_area extends Component
     render()
     {
         return(
-        <div>
+        <div className='chat_area'>
             <div className="chat_view">
                 {this.viewer()}
             </div>
 
-            <form className="chat_input" onSubmit={this.handleSubmit}>
-                <input
+            <form className="chat_input_area" onSubmit={this.handleSubmit}>
+                <input className='chat_input'
                 type="text"
                 placeholder="send message...."
                 value={this.state.input}

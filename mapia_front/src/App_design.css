@@ -1,0 +1,127 @@
+/* 메세지 설정 */
+
+.chat_block
+{
+    list-style:none;
+    display: grid;
+    grid-template-columns: 80px 300px;
+}
+.profile
+{
+    text-align : center;
+
+    background-color: #40A7E3;
+    font-size: 0.5vw;
+    margin:5px 5px 5px 5px;
+    padding:10px 10px 10px 10px;
+    border-radius: 30px 30px 30px 30px;
+
+}
+
+.message
+{
+    background-color: #EFEFEF;
+    border-radius: 15px 15px 15px 15px;
+    color: #262626;
+    margin:5px 5px 5px 5px;
+    padding:10px 10px 10px 10px;
+}
+
+.chat_view
+{
+    background-color: #262626;
+
+    height: 350px;
+    width: 380px;
+    /* flex-direction: column; */
+    border-radius: 20px 20px 20px 20px;
+    
+    border-color: #262626;
+}
+
+
+.login {
+    background-color: #262626;
+    color: white;
+    padding:10px 10px 10px 10px;
+    border-radius: 20px 20px 20px 20px;
+
+    height: 120 px;
+    width: 250px;
+}
+
+.target_area 
+{
+    padding:10px 10px 10px 10px;
+    background-color: #262626;
+    border-radius: 20px 20px 20px 20px;
+    color: white;
+}
+
+.title
+{
+    background-color: #262626;
+    color: white;
+    padding:10px 10px 10px 10px;
+    margin:5px 5px 5px 5px;
+}
+
+.game_state
+{
+    background-color: #262626;
+    padding:10px 10px 10px 10px;
+    margin:5px 5px 5px 5px;
+    border-radius: 20px 20px 20px 20px;
+}
+.game_state>p{
+    background-color: #EFEFEF;
+    padding:10px 10px 10px 10px;
+    border-radius: 20px 20px 20px 20px;
+}
+
+
+.chat_input_area
+{
+    display: flex;
+}
+.chat_input
+{ 
+    background-color: #EFEFEF;
+    border-radius: 20px 20px 20px 20px;
+    border-style: groove;
+    width: 70%;
+    margin:5px 5px 5px 5px;
+}
+
+.form_area
+{
+    margin:5px 5px 5px 5px; 
+}
+
+
+.top_chat_area{
+    margin:5px 5px 5px 5px;
+}
+
+.top_area
+{
+    display: flex;
+    background-color: #3C4043;
+    padding:20px 10px 20px 10px;
+}
+
+.login>input{
+    background-color: #EFEFEF;
+    border: none;
+    border-radius: 20px 20px 20px 20px;
+    padding:10px 10px 10px 10px;
+    margin:5px 5px 5px 5px;
+}
+
+button{
+    background-color: #40A7E3;
+    border: none;
+    border-radius: 20px 20px 20px 20px;
+    padding:10px 10px 10px 10px;
+    margin:5px 5px 5px 5px;
+}

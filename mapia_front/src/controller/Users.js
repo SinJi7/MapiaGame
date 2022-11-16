@@ -21,8 +21,7 @@ class Users_area extends Component {
 
     render() {
         return (
-            <div>
-                test
+            <div className='target_area'>
                 <form onChange={this.radio_handle_change}>
                     {this.userRadio()}
                 </form>

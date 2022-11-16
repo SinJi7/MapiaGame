@@ -38,7 +38,6 @@ class Login_area extends Component {
         event.preventDefault()
     }
 
-
     //login area
     handleSubmit(event) {
         //console.log("dsklsd")
@@ -52,8 +51,8 @@ class Login_area extends Component {
 
     render() {
         return (
-            <div>
-                <form onSubmit={this.handleSubmit}>
+            <div className='form_area'>
+                <form className='login' onSubmit={this.handleSubmit}>
                     Name <input
                         type="text"
                         placeholder="kevin"

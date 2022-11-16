@@ -90,7 +90,7 @@ class Container(threading.Thread):
     def getJob(self, user_name):
         return self.__Game.getPlayerJob(user_name=user_name)
 
-    def isPalyGame(self) -> bool:
+    def isPlayGame(self) -> bool:
         return self.__Game != None 
 
     def isOwner(self, name:str) -> bool:
@@ -120,7 +120,7 @@ class Container(threading.Thread):
         # return
         user_name = data["user_name"]
         
-        if self.__isGamePlay():
+        if self.isPlayGame():
             if self.__Game.isDeadUser(user_name=user_name):
                 self.__emit("message", data, room=f"{self.__NAME}_dead")
                 #dead user일 경우 밑으로 가지 않아야 한다.
@@ -171,12 +171,7 @@ class Container(threading.Thread):
     def isInUser(self, user_token):
         return True if user_token in self.__Users else False
 
-    #Not Use
-    def run(self):
-        while self.__RoomValid:     
-            #self.__emit("test", "SKdlfksfjsflsdfla", room=self.__NAME)
-            if self.__isGamePlay(): self.doGame()
-            time.sleep(1)
+
 
         
 

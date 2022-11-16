@@ -46,7 +46,7 @@ def on_start_game(data): #Game 시간 동안 계속 유지된다
     #reject contiditon
     #add token contiditon, next time
     if (
-        ROOM_CONTAINER[rq_room_name].isPalyGame() or
+        ROOM_CONTAINER[rq_room_name].isPlayGame() or
         not ROOM_CONTAINER[rq_room_name].isOwner(rq_user_name) or
         ROOM_CONTAINER[rq_room_name].isRoomMemberCount()
        ):
@@ -56,7 +56,7 @@ def on_start_game(data): #Game 시간 동안 계속 유지된다
     ###########################################################
     #Game
     while True:
-        if not ROOM_CONTAINER[rq_room_name].isPalyGame(): break
+        if not ROOM_CONTAINER[rq_room_name].isPlayGame(): break
 
         ### 시간 변경 ###
         time_type = ROOM_CONTAINER[rq_room_name].change_time()
@@ -113,7 +113,7 @@ def join_handler(data):
 # param : user_name, room_name
 @socket.on("get_job")
 def on_get_job(data):
-    if ROOM_CONTAINER[data["room_name"]].isPalyGame():
+    if ROOM_CONTAINER[data["room_name"]].isPlayGame():
         job_name = ROOM_CONTAINER[data["room_name"]].getJob(data["user_name"])
         emit("set_job", {"job_name" : job_name})
 
@@ -122,7 +122,7 @@ def on_get_job(data):
 # param : user_name, room_name
 @socket.on("join_mapia")
 def on_join_mapia_handler(data):
-    if ROOM_CONTAINER[data["room_name"]].isPalyGame():
+    if ROOM_CONTAINER[data["room_name"]].isPlayGame():
         if ROOM_CONTAINER[data["user_name"]].isMapiaUser():
             join_room(f"{data['room_name']}_mapia")
 
@@ -132,7 +132,7 @@ def on_join_mapia_handler(data):
 # param : user_name, room_name
 @socket.on("join_dead")
 def on_join_dead_handler(data):
-    if ROOM_CONTAINER[data["room_name"]].isPalyGame():
+    if ROOM_CONTAINER[data["room_name"]].isPlayGame():
         if ROOM_CONTAINER[data["user_name"]].isDeadUser():
             join_room(f"{data['room_name']}_dead")
             join_room(f"{data['room_name']}_mapia")
