@@ -60,14 +60,15 @@ class Container(threading.Thread):
         self.Target_clear()
         return res_targets
 
-    def addTarget(self, name):
-        self.__target_collect.append(name)    
+    def addTarget(self, target: dict):
+        self.__target_collect.append(target)    
     
     def change_time(self):
         return self.__Game.change_time()
         
     def apply_target_to_game(self, type, targets) -> list:
         #직업 처리는 여기서 만들기
+        print(targets)
         res_messages = []
         return res_messages
 
@@ -76,10 +77,16 @@ class Container(threading.Thread):
     def startGameSetting(self) -> bool:
         self.__Game = Game(self.__Users)
 
+        self.update_user_state()
         ##############################################
         self.__emit("game_start", {}, room=self.__NAME)
         #job setting, mapia join
         ##############################################
+
+    def update_user_state(self):
+        for user_dict in self.__Game.getUserLive():
+            self.__Users[user_dict["name"]]["info"] = "alive" if user_dict["live"] else "Death"
+        self.__emit("user_update", {"users": self.__userFilter("info")}, room=self.__NAME)
 
     def endGame(self) -> dict:
         game_res = self.__Game.end_game()
@@ -124,9 +131,9 @@ class Container(threading.Thread):
             if self.__Game.isDeadUser(user_name=user_name):
                 self.__emit("message", data, room=f"{self.__NAME}_dead")
                 #dead user일 경우 밑으로 가지 않아야 한다.
-            elif "afternoon" == self.__Game.gameTime():
+            elif "afternoon" == self.__Game.getTime():
                 self.__emit("message", data, to=self.__NAME)
-            elif "night" == self.__Game.gameTime() and self.__Game.isPlayerMapia():
+            elif "night" == self.__Game.getTime() and self.__Game.isPlayerMapia(user_name):
                 self.__emit("message", data, room=f"{self.__NAME}_mapia")
         else:
             self.__emit("message", data, to=self.__NAME) #게임 플레이 중이 아닐 경우
@@ -142,6 +149,7 @@ class Container(threading.Thread):
         #reset 조건 필요
 
 
+    #원하는 키를 받아서 반환
     def __userFilter(self, *args):
         result_user_ls = []
 

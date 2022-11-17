@@ -1,15 +1,8 @@
-import React, { Component, useEffect, useState } from 'react';
+import React, { Component } from 'react';
 
 import "../App_design.css"
-//import io from 'socket.io-client';
-// import Chat_input from './chat_input';
-// import Chat_view from './chat_view';
 
-// import { socket } from '../socket_connet';
-
-//const socket = io.connect("http://localhost:4000/")
-
-class Chat_area extends Component
+class ChatArea extends Component
 {
     constructor(props) {
         super(props)
@@ -27,10 +20,11 @@ class Chat_area extends Component
 
     handleSubmit(event){
         this.props.send_message(this.state.input, this.props.room_name, this.props.user_name)
+        this.setState({ input: ""})
         event.preventDefault()
     }
     viewer(){
-        const view_message = this.props.messages.slice(-10)
+        const view_message = this.props.messages
         return (<>
         {
         view_message.map(e => <li className='chat_block'> <div className='profile'><strong>{e.user_name}</strong></div> <div className="message">{e.message}</div></li>)
@@ -60,30 +54,4 @@ class Chat_area extends Component
     }
 }
 
-// function Chat_areas(props)
-// {
-//     const [chatlog, setChatlog] = useState([])
-//     useEffect(()=>{
-//         socket.on('message',(e)=>{ //{name,chat}
-//             console.log(e)
-//             //setChatlog([...chat,{name,chat}])
-//         })  
-//     },[])
-
-//     const addChat = (chat) => 
-//     {
-//         console.log("emit")
-//         socket.emit('message',"dskfla")
-//         //socket.emit('message',{room_name: props.room, token : props.token, message: chat, time: 1})
-//         //setChatlog([...chat,{name,chat}])
-//     }
-
-//     return (
-//         <div className="chat_area">
-//             <Chat_view chat_log={chatlog}/>
-//             <Chat_input addChat={addChat}/>
-//         </div>
-//     )
-// }
-
-export default Chat_area;
+export default ChatArea;

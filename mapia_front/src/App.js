@@ -1,6 +1,6 @@
-import Chat_area from './chat/chat_area';
-import Login_area from './login/login_area';
-import Users_area from './controller/Users';
+import ChatArea from './chat/chat_area';
+import LoginArea from './login/login_area';
+import UsersArea from './controller/Users';
 
 import "./App_design.css"
 
@@ -15,11 +15,11 @@ class App extends Component {
       token: false,
       room_name: "",
       user_name: "",
-      messages: [{ user_name: "admin", message: "connect..." },
+      messages: [{ user_name: "안내", message: "Join을 눌러 방에 입장" },
       ],
       users: [
       ],
-      time: "afternoon",
+      time: "Chat",
       target_type: "투표",
       target: "",
       job_name: ""
@@ -39,7 +39,7 @@ class App extends Component {
     socket.on("message", (data) => {
       console.log(data)
       const body = { user_name: data["user_name"], message: data["message"] }
-      this.setState({ messages: [... this.state.messages, body] })
+      this.setState({ messages: [body, ...this.state.messages] })
     })
 
     socket.on("update_user_list", (data) => {
@@ -55,6 +55,7 @@ class App extends Component {
     })
 
     socket.on("game_start", (data) => {
+      this.setState({time: "afternoon"})
       socket.emit("join_mapia", {
         user_name: this.state.user_name,
         room_name: this.state.room_name,
@@ -63,6 +64,10 @@ class App extends Component {
         user_name: this.state.user_name,
         room_name: this.state.room_name
       })
+    })
+
+    socket.on("end_game", (data) => {
+      this.setState({time: "Chat"})
     })
 
     socket.on("set_job", (data) => {
@@ -126,7 +131,7 @@ class App extends Component {
     <div className='top_area'>
 
       <div className='interface'>
-        <Login_area
+        <LoginArea
           join_room={this.join_room}
           game_startting={this.game_startting}
           user_name={this.state.user_name}
@@ -140,15 +145,15 @@ class App extends Component {
       </div>
 
       <div className='top_chat_area'>
-        <Chat_area
+        <ChatArea
           send_message={this.send_message}
           messages={this.state.messages}
           room_name={this.state.room_name}
           user_name={this.state.user_name}
         />
-        <Users_area
+        <UsersArea
           users={this.state.users}
-          setTarget={this.state.target}
+          setTarget={this.setTarget}
         />
       </div>
 

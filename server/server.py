@@ -64,12 +64,14 @@ def on_start_game(data): #Game 시간 동안 계속 유지된다
             emit("time_update", {"time" : time_type, }, room=rq_room_name)
 
             target_dict_ls:list = ROOM_CONTAINER[rq_room_name].Target_Colleting(time_type) # dict
+
             #밤 -> 투표 (사형 대상)
             #투표 -> 밤 (사형 여부)
             #밤 -> 낮 (특수능력 사용 대상)
             #구현 미완료
             messages = ROOM_CONTAINER[rq_room_name].apply_target_to_game(time_type, target_dict_ls)
             ROOM_CONTAINER[rq_room_name].send_system_message("\n".join(messages))
+            ROOM_CONTAINER[rq_room_name].update_user_state()
         ################
 
         time.sleep(1)
@@ -88,7 +90,7 @@ def on_Target(data): #유저 필터링 미적용 타겟만 수집
     room_name = data["room_name"]
     target_name = data["target_name"]
     user_name = data["user_name"]
-    ROOM_CONTAINER[room_name].addTarget({user_name: target_name}) #user_name : target_name 형태로 수정 필요
+    ROOM_CONTAINER[room_name].addTarget({"send_user_name" : user_name, "target_user_name" : target_name}) #user_name : target_name 형태로 수정 필요
 
 @socket.on('join_room')
 def join_handler(data):
@@ -123,7 +125,7 @@ def on_get_job(data):
 @socket.on("join_mapia")
 def on_join_mapia_handler(data):
     if ROOM_CONTAINER[data["room_name"]].isPlayGame():
-        if ROOM_CONTAINER[data["user_name"]].isMapiaUser():
+        if ROOM_CONTAINER[data["room_name"]].isMapiaUser(data["user_name"]):
             join_room(f"{data['room_name']}_mapia")
 
 
@@ -133,7 +135,7 @@ def on_join_mapia_handler(data):
 @socket.on("join_dead")
 def on_join_dead_handler(data):
     if ROOM_CONTAINER[data["room_name"]].isPlayGame():
-        if ROOM_CONTAINER[data["user_name"]].isDeadUser():
+        if ROOM_CONTAINER[data["room_name"]].isDeadUser(data["user_name"]):
             join_room(f"{data['room_name']}_dead")
             join_room(f"{data['room_name']}_mapia")
 

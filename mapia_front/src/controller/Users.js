@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class Users_area extends Component {
+class UsersArea extends Component {
     constructor(props) {
         super(props)
         this.radio_handle_change = this.radio_handle_change.bind(this)
@@ -29,4 +29,4 @@ class Users_area extends Component {
     }
 }
 
-export default Users_area;
+export default UsersArea;

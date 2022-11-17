@@ -36,12 +36,15 @@ class Game:
     base = {"name": "null", "job_name": "citizen", "live": False}
 
     for user_dict in self.__game_players:
-      if user_dict["user_name"] == find_user_name:
+      if user_dict["name"] == find_user_name:
         base = user_dict
 
     return base
 
   #getter
+  def getUserLive(self) -> list:
+    return [{"name" : player_dict["name"], "live" : player_dict["live"]} for player_dict in self.__game_players]
+
   def getTime(self):
     return self.__game_time["time"]
     
@@ -89,7 +92,7 @@ class Game:
   #setter
   def __set_game_time(self, time_type:str) -> None:
     #time_type_seconds:dict = {"afternoon": 120,"night": 60,"vote": 20}
-    time_type_seconds:dict = {"afternoon": 10,"night": 10,"vote": 10}
+    time_type_seconds:dict = {"afternoon": 25,"night": 25,"vote": 25}
     next_second = time_type_seconds[time_type]
 
     self.__game_time = {

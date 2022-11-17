@@ -1,12 +1,7 @@
 
 import React, { Component } from 'react'
-// import { useState } from 'react';
-// import { socket } from '../socket_connet';
-// import { useAsync } from "react-async"
-// import axios from 'axios';
-//import io from 'socket.io-client';
 
-class Login_area extends Component {
+class LoginArea extends Component {
     constructor(props) {
         super(props)
 
@@ -78,5 +73,4 @@ class Login_area extends Component {
 }
 
 
-
-export default Login_area;
+export default LoginArea;
