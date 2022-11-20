@@ -36,21 +36,21 @@ def on_connect():
 ##############################################
 #컨테이너 사용 추가하기
 
-
 @socket.on('game_start')
 def on_start_game(data): #Game 시간 동안 계속 유지된다
     print("================start_game====================")
     rq_room_name = data["room_name"]
     rq_user_name = data["user_name"]
 
+    #컨테이너 영역으로 옮길 수 있을 듯?
     #reject contiditon
     #add token contiditon, next time
     if (
         ROOM_CONTAINER[rq_room_name].isPlayGame() or
-        not ROOM_CONTAINER[rq_room_name].isOwner(rq_user_name) or
         ROOM_CONTAINER[rq_room_name].isRoomMemberCount()
        ):
-        pass #return test 용도롤 조건 무시
+       ROOM_CONTAINER[rq_room_name].send_system_message("이미 게임이 진행중이거나, 플레이어 수가 부족합니다")
+       return
     #Game Start
     ROOM_CONTAINER[rq_room_name].startGameSetting()
     ###########################################################
@@ -60,7 +60,7 @@ def on_start_game(data): #Game 시간 동안 계속 유지된다
 
         ### 시간 변경 ###
         time_type = ROOM_CONTAINER[rq_room_name].change_time()
-        if time_type:
+        if time_type: #시간변경시에만
             emit("time_update", {"time" : time_type, }, room=rq_room_name)
 
             target_dict_ls:list = ROOM_CONTAINER[rq_room_name].Target_Colleting(time_type) # dict
@@ -68,17 +68,26 @@ def on_start_game(data): #Game 시간 동안 계속 유지된다
             #밤 -> 투표 (사형 대상)
             #투표 -> 밤 (사형 여부)
             #밤 -> 낮 (특수능력 사용 대상)
-            #구현 미완료
             messages = ROOM_CONTAINER[rq_room_name].apply_target_to_game(time_type, target_dict_ls)
-            ROOM_CONTAINER[rq_room_name].send_system_message("\n".join(messages))
+            ROOM_CONTAINER[rq_room_name].send_system_message(messages)
             ROOM_CONTAINER[rq_room_name].update_user_state()
-        ################
+            if time_type == "afternoon" : emit("abilty_time", room=rq_room_name)
 
+            ROOM_CONTAINER[rq_room_name].doGame() #게임 진행 여부 체크
+        ################
         time.sleep(1)
-        ROOM_CONTAINER[rq_room_name].doGame()
-    close_room(f"{rq_room_name}_mapia") #열었던 경우 닫는다.
+        
+    close_room(f"{rq_room_name}_mapia") #열었던 것들을 닫는다.
     close_room(f"{rq_room_name}_dead")
     ###########################################################
+
+@socket.on('check_abilty')
+def on_check_ablity(data):
+    room_name = data["room_name"]
+    user_name = data["user_name"]
+    ROOM_CONTAINER[room_name].send_skill_result(user_name)
+    return
+
 
 # type: data["type"],
 # user_name: this.state.user_name,
@@ -160,18 +169,6 @@ def message_handler(msg, methods=['GET', 'POST']):
     #emit("message",  body, room=msg["room_name"])
 
     return
-
-    print(room_name)
-    print([i for i in ROOM_CONTAINER])
-    
-
-    print('received my event: ' + str(json))
-    
-    #socketio.emit()
-    # emit("response", {'data': message['data'], 'username': session['username']}, broadcast=True)
-
-    #이벤트 처리 추가
-    #socketio.emit('my response', json, callback=messageReceived)
 
 ##############################################
 

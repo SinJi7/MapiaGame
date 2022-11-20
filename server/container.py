@@ -2,6 +2,7 @@ import threading
 
 from mapia_core.Core import Game
 import time
+from datetime import datetime, timedelta
 
 import asyncio
 from flask import request
@@ -51,11 +52,12 @@ class Container(threading.Thread):
             self.send_system_message("밤이 되었습니다.")
         elif type == "afternoon":
             self.send_system_message("아침이 되었습니다.")
-        #수정 필요 영역
-        time.sleep(5) #send_target이 완료되기 위해서
-        # isTarget_CollectComplete(self)
-        # datatiem 이용 5초 동안 대기 가능하게 제작
-        ################################
+        
+        #수집 기간 설정
+        end_collect_time = datetime.now() + timedelta(seconds=3)
+        while len(self.__target_collect) == len(self.__Game.getUserLive()):
+            if end_collect_time <= datetime.now() : break
+
         res_targets = self.__target_collect[:]
         self.Target_clear()
         return res_targets
@@ -66,10 +68,9 @@ class Container(threading.Thread):
     def change_time(self):
         return self.__Game.change_time()
         
-    def apply_target_to_game(self, type, targets) -> list:
+    def apply_target_to_game(self, time_type, targets) -> list:
         #직업 처리는 여기서 만들기
-        print(targets)
-        res_messages = []
+        res_messages = self.__Game.process_target(time_type, targets=targets)
         return res_messages
 
     ####################################
@@ -105,21 +106,34 @@ class Container(threading.Thread):
         
     def isMapiaUser(self, user_name):
         return self.__Game.isPlayerMapia(user_name=user_name)
-    def isUserDead(self, user_name):
-        return True
+
+    def isDeadUser(self, user_name):
+        return self.__Game.isAlive() == False
 
     def isRoomMemberCount(self) -> bool:
         member_cnt = len([i for i in self.__Users])
         return True if (member_cnt == 6 or member_cnt ==  8 or member_cnt == 10) else False
 
+    def send_skill_result(self, user_name):
+        message = self.__Game.get_skill_res(user_name)
+        player_job = self.__Game.getPlayerJob(user_name=user_name)
 
-    def send_system_message(self, message):
+        if player_job == "police":
+            self.send_system_message(message=message, private=True)
+        return
+
+    #game 영역에서 private 옵션 사용 금지(게임 시작 유저에게 메세지가 간다)
+    def send_system_message(self, message, private=False):
         body = {
             "room_name": self.__NAME,
             "user_name": "admin",
             "message": message
         }
-        self.__emit("message", body, to=self.__NAME)
+        if private:
+            self.__emit("message", body)
+        else:
+            self.__emit("message", body, to=self.__NAME)
+        
 
     #parm: data{user_name, room_name, message}
     def sendMessage(self, data) -> None: #sever.py 에서 호출 해야함
@@ -128,7 +142,7 @@ class Container(threading.Thread):
         user_name = data["user_name"]
         
         if self.isPlayGame():
-            if self.__Game.isDeadUser(user_name=user_name):
+            if not self.__Game.isAlive():
                 self.__emit("message", data, room=f"{self.__NAME}_dead")
                 #dead user일 경우 밑으로 가지 않아야 한다.
             elif "afternoon" == self.__Game.getTime():
@@ -144,9 +158,14 @@ class Container(threading.Thread):
         return self.__RoomValid
 
     def doGame(self):
-        #낮, 밤 변경
-        pass #게임 진행 함수 여기에
-        #reset 조건 필요
+        #종료 조건
+        win_msg = self.__Game.isEndGame()
+        if win_msg:
+            end_message = self.__Game.getPalyerToString() + f"\n{win_msg}"
+            self.send_system_message(end_message)
+            return True
+        else:
+            return False
 
 
     #원하는 키를 받아서 반환

@@ -46,8 +46,11 @@ class App extends Component {
       this.setState({ users: data.users })
     })
 
-    socket.on("test", (data) => {
-      console.log(data)
+    socket.on("abilty_time", (data) => {
+      socket.emit("check_abilty", {
+        user_name: this.state.user_name,
+        room_name: this.state.room_name,
+      })
     })
 
     socket.on("user_update", (data) => {
