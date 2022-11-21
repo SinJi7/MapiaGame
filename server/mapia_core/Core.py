@@ -25,8 +25,6 @@ class Game:
   }
   #initializer area
 
-
-
   #parm 유저 식별자(이름)
   def __init__(self, playerDict:dict):
     playerIds = [i for i in playerDict] 
@@ -77,7 +75,7 @@ class Game:
     return self.__game_time["time"]
     
   def getPalyerToString(self):
-    res = [f"Name: {user['name']} job_naem: {user['job_name']}" for user in self.__game_players]
+    res = [f"Name: {user['name']} job_name: {user['job_name']}" for user in self.__game_players]
     return "\n".join(res)
 
   def getPlayerJob(self, user_name):
@@ -97,12 +95,15 @@ class Game:
     if self.__game_time["time"] == "aftermoon" and self.__game_time["next"] <= datetime.now():
       return True
 
-  def isEndGame(self):
+  def isEndGame(self):  
     mapia = 0
     citizen = 0
     for user in self.__game_players:
-      mapia += 1 if self.__game_players["job_name"] == "mapia" else 0
-      citizen += 1 if self.__game_players["job_name"] != "mapia" else 0
+      mapia += 1 if user["job_name"] == "mapia" and user["live"] else 0 #마피아인 유저수
+      citizen += 1 if user["job_name"] != "mapia" and user["live"] else 0 #마피아가 아닌 유저 수
+
+    print(f"마피아 유저수: {mapia}, 시민 수: {citizen}")
+    
     if mapia == 0:
       return "시민승리"
     elif citizen == 0:
@@ -123,7 +124,7 @@ class Game:
   #setter
   def __set_game_time(self, time_type:str) -> None:
     #time_type_seconds:dict = {"afternoon": 120,"night": 60,"vote": 20}
-    time_type_seconds:dict = {"afternoon": 10,"night": 10,"vote": 10}
+    time_type_seconds:dict = {"afternoon": 60,"night": 20,"vote": 40}
     next_second = time_type_seconds[time_type]
 
     self.__game_time = {
@@ -211,11 +212,11 @@ class Game:
     #res에서는 메세지를 반환 받아야함
     res = ""
     if time_type == "afternoon":
-      res = self.__process_afternoon_vote(effetive_target)
-    if time_type == "vote":
-      res = self.__process_vote(effetive_target)
-    if time_type == "night":
       res = self.__process_classic_job(effetive_target)
+    if time_type == "vote":
+      res = self.__process_afternoon_vote(effetive_target)
+    if time_type == "night":
+      res = self.__process_vote(effetive_target)
     return res
 
   #function: time check, change time

@@ -167,7 +167,6 @@ class Container(threading.Thread):
         else:
             return False
 
-
     #원하는 키를 받아서 반환
     def __userFilter(self, *args):
         result_user_ls = []
@@ -197,10 +196,6 @@ class Container(threading.Thread):
     
     def isInUser(self, user_token):
         return True if user_token in self.__Users else False
-
-
-
-        
 
 
 def make_container_start(name, emit):

@@ -73,7 +73,8 @@ def on_start_game(data): #Game 시간 동안 계속 유지된다
             ROOM_CONTAINER[rq_room_name].update_user_state()
             if time_type == "afternoon" : emit("abilty_time", room=rq_room_name)
 
-            ROOM_CONTAINER[rq_room_name].doGame() #게임 진행 여부 체크
+            if ROOM_CONTAINER[rq_room_name].doGame():
+                break #게임 진행 여부 체크
         ################
         time.sleep(1)
         
