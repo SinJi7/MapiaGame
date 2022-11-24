@@ -106,6 +106,16 @@ def on_Target(data): #유저 필터링 미적용 타겟만 수집
 def join_handler(data):
     print("=============join_room=============")
     room_name = data["room_name"]
+    
+    if room_name in ROOM_CONTAINER and ROOM_CONTAINER[room_name].isPlayGame():
+        body = {
+        "room_name" : "private",
+        "user_name" : "admin",
+        "message" : "이미 게임이 진행 중인 방 입니다."
+        }
+        emit("message", body)
+        return
+
     join_room(room_name)
 
     #컨테이너 생성 or 입장

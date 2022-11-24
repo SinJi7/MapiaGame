@@ -112,7 +112,8 @@ class Container(threading.Thread):
 
     def isRoomMemberCount(self) -> bool:
         member_cnt = len([i for i in self.__Users])
-        return True if (member_cnt == 6 or member_cnt ==  8 or member_cnt == 10) else False
+        print(member_cnt)
+        return True if (member_cnt < 6) else False
 
     def send_skill_result(self, user_name):
         message = self.__Game.get_skill_res(user_name)

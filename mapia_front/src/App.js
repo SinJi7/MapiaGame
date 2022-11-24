@@ -6,7 +6,15 @@ import "./App_design.css"
 
 import React, { Component } from 'react'
 import io from 'socket.io-client'
-const socket = io.connect('http://localhost:4000');
+
+const host_name = new Promise((resolve) => fetch('host.json').then(response => {
+  response.json().then(settings => {
+    resolve(settings["host_name"])
+  })
+}))
+
+const socket = io.connect(host_name);
+
 
 class App extends Component {
   constructor(props) {
